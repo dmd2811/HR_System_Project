@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chấm công</title>
+    <link rel="stylesheet" href="timesheets.css">
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Quản lý Chấm Công</h1>
+        </header>
+        <section>
+            <div>
+                <button class = "bt bt-add">Thêm mới</button>
+            </div>
+            <table class = "timesheets-table">
+                <thead>
+                    <tr>
+                        <th>Mã Nhân viên</th>
+                        <th>Ngày</th>
+                        <th>Giờ vào</th>
+                        <th>Giờ ra</th>
+                        <th>Số giờ làm</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu chấm công sẽ hiển thị ở đây -->
+                    <tr>
+                        <td>---</td>
+                        <td>---</td>
+                        <td>---</td>
+                        <td>---</td>
+                        <td>---</td>
+                        <td>---</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <div class="modal" id="addTimesheetModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            <h2>Thêm nhân viên</h2>
+            <form id="addTimesheetForm">
+
+                <label for="employee_id">Mã nhân viên:</label>
+                <input type="number" id="employee_id" required>
+
+                <label for="days">Ngày làm:</label>
+                <input type="date" id="days" required>
+
+                <label for="check-in">Giờ vào:</label>
+                <input type="time" id="check-in" required>
+
+                <label for="check-out">Giờ ra:</label>
+                <input type="time" id="check-out" required>
+                
+                <label for="hours_worked">Số giờ làm:</label>
+                <input type="number" id="hours_worked" required>
+
+                <button type="submit" class="bt-submit-add">Lưu</button>
+            </form>
+        </div>
+    </div>
+    
+
+    <script src="timesheets.js"></script>
+</body>
+</html>
