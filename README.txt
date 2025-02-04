@@ -3,9 +3,8 @@ To upload:
 	git status
 	git add .
 	git commit -m "Upload from HN-PC"
-	git branch main
 	git remote add origin https://github.com/dmd2811/HR_system_project.git
-	git push origin main
+	git push origin master
 	
 to download
 	git clone https://github.com/dmd2811/HR_system_project.git
