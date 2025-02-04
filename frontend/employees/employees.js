@@ -33,12 +33,10 @@ function employees(event){
             });
         })
         .catch(error =>{
-            alert(data.error)
             window.location.href = ("../login/login.html")
         })
     }
     else{
-        alert(data.error)
         window.location.href = ("../login/login.html")
     }
 }
@@ -58,8 +56,6 @@ function click_Add() {
             modal_add.style.display = "none"; // Ẩn modal
         }
     });
-
-
 }
 
 bt_submit_add = document.querySelector(".bt-submit-add")

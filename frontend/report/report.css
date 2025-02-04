@@ -1,0 +1,43 @@
+.report-container {
+    width:90%;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+#month-select {
+    padding: 5px;
+    margin-bottom: 15px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th, .report-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.report-table th {
+    background-color: #34495e;
+    color: white;
+}
+
+.report-table tr:hover {
+    background-color: #f1f1f1;
+}

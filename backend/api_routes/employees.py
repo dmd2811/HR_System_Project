@@ -61,7 +61,7 @@ def add_employees():
                 return jsonify({"message": "Add new employee successfully !"}),200 
             else:
                 return jsonify({"error": "You aren't permission !"})
-            return jsonify(employee),200
+
     except Exception as e:
         return jsonify({"error": str(e)})
 

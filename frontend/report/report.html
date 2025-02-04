@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Báo cáo chấm công</title>
+    <link rel="stylesheet" href="report.css">
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Báo Cáo Chấm Công</h1>
+        </header>
+        <section>
+            <div class="report-container">
+                <!-- Bộ lọc chọn tháng -->
+                <label for="month-select">Chọn tháng:</label>
+                <select id="month-select">
+                    <option value="1">Tháng 1</option>
+                    <option value="2">Tháng 2</option>
+                    <option value="3">Tháng 3</option>
+                    <option value="4">Tháng 4</option>
+                    <option value="5">Tháng 5</option>
+                    <option value="6">Tháng 6</option>
+                    <option value="7">Tháng 7</option>
+                    <option value="8">Tháng 8</option>
+                    <option value="9">Tháng 9</option>
+                    <option value="10">Tháng 10</option>
+                    <option value="11">Tháng 11</option>
+                    <option value="12">Tháng 12</option>
+                </select>
+            
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Mã nhân viên</th>
+                            <th>Họ và tên</th>
+                            <th>Số ngày công</th>
+                            <th>Lương tháng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body">
+                        <!-- Dữ liệu sẽ được thêm vào đây -->
+                         <tr>
+                            <td>---</td>
+                            <td>---</td>
+                            <td>---</td>
+                            <td>---</td>
+                         </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    
+    <script src="report.js"></script>
+</body>
+</html>
