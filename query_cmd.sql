@@ -56,39 +56,62 @@ delete from tb_employees where id = 24;
 update tb_employees set department = null, position = null , base_salary = null where employee_id = 1000;
 
 
--- Tính tổng thời gian làm việc của nhân viên trong tháng 2/2025
-select *, TIMESTAMPDIFF(MINUTE, t.check_in, t.check_out) AS total_work_time_minutes
-from tb_employees e
-left join tb_timesheets t on e.employee_id = t.employee_id;
 
 
-SELECT
-    e.employee_id,  -- Chọn cột employee_id từ bảng e (tb_employees)
-    e.name,  -- Chọn cột name từ bảng e
-    SUM(TIMESTAMPDIFF(MINUTE, t.check_in, t.check_out)) AS total_work_time_minutes,  -- Tính tổng số phút làm việc
-    (e.base_salary / (8 * DAY(LAST_DAY('2025-02-01')) * 60)) AS hourly_rate,  -- Tính đơn giá lương theo phút
-    (SUM(TIMESTAMPDIFF(MINUTE, t.check_in, t.check_out)) * (e.base_salary / (8 * DAY(LAST_DAY('2025-02-01')) * 60))) AS total_salary,  -- Tính lương
-    CASE
-        WHEN SUM(TIMESTAMPDIFF(MINUTE, t.check_in, t.check_out)) IS NULL THEN 0  -- Xử lý trường hợp không có chấm công
-        ELSE ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.check_in, t.check_out)) / 60, 2)  -- Tính tổng số giờ làm việc (làm tròn 2 chữ số thập phân)
-    END AS total_work_time_hours
-FROM tb_employees e  -- Lấy dữ liệu từ bảng tb_employees và gán bí danh là e
-LEFT JOIN tb_timesheets t ON e.employee_id = t.employee_id AND MONTH(t.days) = 2 AND YEAR(t.days) = 2025  -- Kết nối bảng tb_employees và tb_timesheets, lọc theo tháng 2/2025
-GROUP BY e.employee_id, e.name;  -- Nhóm kết quả theo employee_id và name
 
-select DAY(LAST_DAY('2025-02-01'));
 
-SELECT
-    DAY(LAST_DAY('2025-02-01')) - (
-        SELECT COUNT(*)
-        FROM (
-            SELECT DATE('2025-02-01') + INTERVAL (n - 1) DAY AS dt
+-- Bước 1: Tạo bảng seq_0_to_31 (nếu chưa tồn tại)
+CREATE TABLE IF NOT EXISTS seq_0_to_31 (
+    seq INT
+);
+
+-- Chèn các giá trị từ 0 đến 31 vào bảng (nếu chưa có)
+INSERT IGNORE INTO seq_0_to_31 (seq) VALUES
+(0), (1), (2), (3), (4), (5), (6), (7), (8), (9),
+(10), (11), (12), (13), (14), (15), (16), (17), (18), (19),
+(20), (21), (22), (23), (24), (25), (26), (27), (28), (29),
+(30), (31);
+
+-- Bước 2: Tính toán số ngày công trong tháng
+WITH MonthlyWorkingDays AS (
+    -- Thay '2023-03-01' bằng ngày đầu tiên của tháng bạn muốn tính toán
+    SELECT 
+        DAY(LAST_DAY('2025-02-01')) - (
+            SELECT COUNT(*) 
             FROM (
-                SELECT a.n + b.n * 10 + 1 AS n
-                FROM (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) AS a
-                CROSS JOIN (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3) AS b
-            ) AS numbers
-            WHERE MONTH(DATE('2025-02-01') + INTERVAL (n - 1) DAY) = 2 AND YEAR(DATE('2025-02-01') + INTERVAL (n - 1) DAY) = 2025
-            AND DAYOFWEEK(DATE('2025-02-01') + INTERVAL (n - 1) DAY) IN (1, 7) -- Đếm ngày thứ 7 và chủ nhật
-        ) AS weekend_days
-    ) AS working_days; -- Kết quả: 20
+                SELECT '2025-02-01' + INTERVAL seq DAY AS dt
+                FROM seq_0_to_31  -- Sử dụng bảng seq_0_to_31
+            ) AS dates
+            WHERE DAYOFWEEK(dt) IN (1, 7) AND dt <= LAST_DAY('2025-02-01')
+        ) AS working_days_in_month
+),
+-- Bước 3: Tính toán tổng số phút làm việc trong ngày cho mỗi nhân viên
+CalculatedTimesheets AS (
+    SELECT 
+        employee_id,
+        days,
+        SUM(TIMESTAMPDIFF(MINUTE, check_in, check_out)) AS total_minutes_per_day
+    FROM tb_timesheets
+    GROUP BY employee_id, days
+    HAVING DAYOFWEEK(days) NOT IN (1, 7) 
+),
+-- Bước 4: Tính tiền lương trên 1 phút cho mỗi nhân viên
+SalaryPerMinute AS (
+    SELECT
+        e.employee_id,
+        e.base_salary / mwd.working_days_in_month / 8 / 60 AS salary_per_minute
+    FROM tb_employees e
+    CROSS JOIN MonthlyWorkingDays mwd  -- Kết hợp với số ngày công trong tháng
+)
+-- Bước 5: Tính tổng lương cho mỗi nhân viên
+SELECT 
+    cts.employee_id,
+    e.name,
+    ROUND(SUM(cts.total_minutes_per_day) / 60 / 8,2) as total_working_day,
+    ROUND(spm.salary_per_minute * SUM(cts.total_minutes_per_day),2) AS total_salary
+FROM CalculatedTimesheets cts
+JOIN SalaryPerMinute spm ON cts.employee_id = spm.employee_id
+JOIN tb_employees e on cts.employee_id = e.employee_id
+WHERE cts.employee_id = 1009
+GROUP BY cts.employee_id, spm.salary_per_minute;
+
