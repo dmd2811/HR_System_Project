@@ -20,6 +20,12 @@ label {
 #month-select {
     padding: 5px;
     margin-bottom: 15px;
+    margin-right: 10px;
+}
+#year-select {
+    padding: 5px;
+    margin-bottom: 15px;
+    margin-right: 10px;
 }
 
 .report-table {

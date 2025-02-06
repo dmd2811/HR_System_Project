@@ -28,30 +28,38 @@ def string_query(employee_id, role,date_value):
         CalculatedTimesheets AS (
             SELECT 
                 employee_id,
-                days,
+                MONTH(days) as month,
                 SUM(TIMESTAMPDIFF(MINUTE, check_in, check_out)) AS total_minutes_per_day
             FROM tb_timesheets
-            GROUP BY employee_id, days
-            HAVING DAYOFWEEK(days) NOT IN (1, 7) 
+            GROUP BY employee_id, MONTH(days)
+            HAVING SUM(CASE WHEN DAYOFWEEK(days) IN (1, 7) THEN 1 ELSE 0 END) = 0
         ),
         -- Bước 4: Tính tiền lương trên 1 phút cho mỗi nhân viên
         SalaryPerMinute AS (
             SELECT
                 e.employee_id,
-                e.base_salary / mwd.working_days_in_month / 8 / 60 AS salary_per_minute
+                e.base_salary / (
+                    SELECT working_days_in_month
+                    FROM MonthlyWorkingDays
+                    WHERE MONTH('{date_value}') = cts.month
+                ) / 8 / 60 AS salary_per_minute, 
+                cts.month AS month_sqm
             FROM tb_employees e
-            CROSS JOIN MonthlyWorkingDays mwd  -- Kết hợp với số ngày công trong tháng
+            JOIN CalculatedTimesheets cts ON e.employee_id = cts.employee_id
+            GROUP BY e.employee_id, e.base_salary, cts.month -- Gom nhóm theo nhân viên, lương cơ bản và tháng
         )
         -- Bước 5: Tính tổng lương cho mỗi nhân viên
         SELECT 
             cts.employee_id,
             e.name,
             ROUND(SUM(cts.total_minutes_per_day) / 60 / 8,2) as total_working_day,
-            ROUND(spm.salary_per_minute * SUM(cts.total_minutes_per_day),2) AS total_salary
+            ROUND(spm.salary_per_minute * SUM(cts.total_minutes_per_day),2) AS total_salary,
+            cts.month
         FROM CalculatedTimesheets cts
-        JOIN SalaryPerMinute spm ON cts.employee_id = spm.employee_id
+        JOIN SalaryPerMinute spm ON cts.employee_id = spm.employee_id AND cts.month = spm.month_sqm
         JOIN tb_employees e on cts.employee_id = e.employee_id
-        GROUP BY cts.employee_id, spm.salary_per_minute;
+        WHERE cts.month = MONTH('{date_value}')
+        GROUP BY cts.employee_id, spm.salary_per_minute, cts.month;
 
         """
     elif role == "employee":
@@ -73,31 +81,39 @@ def string_query(employee_id, role,date_value):
         CalculatedTimesheets AS (
             SELECT 
                 employee_id,
-                days,
+                MONTH(days) as month,
                 SUM(TIMESTAMPDIFF(MINUTE, check_in, check_out)) AS total_minutes_per_day
             FROM tb_timesheets
-            GROUP BY employee_id, days
-            HAVING DAYOFWEEK(days) NOT IN (1, 7) 
+            GROUP BY employee_id, MONTH(days)
+            HAVING SUM(CASE WHEN DAYOFWEEK(days) IN (1, 7) THEN 1 ELSE 0 END) = 0
         ),
         -- Bước 4: Tính tiền lương trên 1 phút cho mỗi nhân viên
         SalaryPerMinute AS (
             SELECT
                 e.employee_id,
-                e.base_salary / mwd.working_days_in_month / 8 / 60 AS salary_per_minute
+                e.base_salary / (
+                    SELECT working_days_in_month
+                    FROM MonthlyWorkingDays
+                    WHERE MONTH('{date_value}') = cts.month
+                ) / 8 / 60 AS salary_per_minute, 
+                cts.month AS month_sqm
             FROM tb_employees e
-            CROSS JOIN MonthlyWorkingDays mwd  -- Kết hợp với số ngày công trong tháng
+            JOIN CalculatedTimesheets cts ON e.employee_id = cts.employee_id
+            GROUP BY e.employee_id, e.base_salary, cts.month -- Gom nhóm theo nhân viên, lương cơ bản và tháng
         )
         -- Bước 5: Tính tổng lương cho mỗi nhân viên
         SELECT 
             cts.employee_id,
             e.name,
             ROUND(SUM(cts.total_minutes_per_day) / 60 / 8,2) as total_working_day,
-            ROUND(spm.salary_per_minute * SUM(cts.total_minutes_per_day),2) AS total_salary
+            ROUND(spm.salary_per_minute * SUM(cts.total_minutes_per_day),2) AS total_salary,
+            cts.month
         FROM CalculatedTimesheets cts
-        JOIN SalaryPerMinute spm ON cts.employee_id = spm.employee_id
+        JOIN SalaryPerMinute spm ON cts.employee_id = spm.employee_id AND cts.month = spm.month_sqm
         JOIN tb_employees e on cts.employee_id = e.employee_id
-        WHERE cts.employee_id = {employee_id}
-        GROUP BY cts.employee_id, spm.salary_per_minute;
+        WHERE cts.month = MONTH('{date_value}') AND cts.employee_id = {employee_id}
+        GROUP BY cts.employee_id, spm.salary_per_minute, cts.month;
+
         """
     return string_result
 
