@@ -62,22 +62,20 @@ function click_Show(event){
                     <td>---</td>
                     <td>---</td>
                     <td>---</td>
-                    <td>---</td>
                 `;
                 tableBody.append(row)
             }
             else{
                 console.log(data)
+                const tableBody = document.querySelector(".report-table tbody")
+                tableBody.innerHTML = ""
                 data.forEach(infor_report => {
-                    const tableBody = document.querySelector(".report-table tbody")
-                    tableBody.innerHTML = ""
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${infor_report.employee_id}</td>
                         <td>${infor_report.name}</td>
                         <td>${infor_report.total_working_day}</td>
                         <td>${infor_report.total_salary}</td>
-                        <td>${infor_report.month}</td>
                     `;
                     tableBody.append(row)
                 });
